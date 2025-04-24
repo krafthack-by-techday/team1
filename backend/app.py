@@ -21,7 +21,7 @@ class Backend:
 
         self.fetcher = LocalSpotPriceFetcher(path_to_norway_data=Path(path))
 
-    def get_norgespris_cost_per_hour(
+    def get_spotpris_cost_per_hour(
         self, start: datetime, end: datetime, meter_name: str = "Trydal_1"
     ) -> pd.Series:
         prices = self.fetcher.get_price(price_area="NO1", start=start, end=end)
