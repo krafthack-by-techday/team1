@@ -38,16 +38,16 @@ def henter_og_beregner_data(user: str, fastpris: int, price_area: str) -> Dict[s
     NB. The function name is shown in the app so i've given it a norwegian name
     """
     spot_cost = app.get_spotpris_cost_per_hour(
-        start=datetime(2023, 1, 1, hour=0, tzinfo=ZoneInfo("UTC")),
-        end=datetime(2023, 12, 31, hour=23, tzinfo=ZoneInfo("UTC")),
+        start=datetime(2022, 6, 1, hour=0, tzinfo=ZoneInfo("UTC")),
+        end=datetime(2025, 3, 1, hour=23, tzinfo=ZoneInfo("UTC")),
         meter_name=user,
         price_area=price_area
     )
 
     norgespris_cost = app.get_fastpris_cost_per_hour(
             fastpris=fastpris,
-            start=datetime(2023, 1, 1, hour=0, tzinfo=ZoneInfo("UTC")),
-            end=datetime(2023, 12, 31, hour=23, tzinfo=ZoneInfo("UTC")),
+            start=datetime(2022, 6, 1, hour=0, tzinfo=ZoneInfo("UTC")),
+            end=datetime(2025, 3, 1, hour=23, tzinfo=ZoneInfo("UTC")),
             meter_name=user,
         )
 
