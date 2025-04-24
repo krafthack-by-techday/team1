@@ -37,8 +37,8 @@ def controls():  # -> Config:
     # Drowpdown for date interval
     today = datetime.date.today()
     last_3_years = today - datetime.timedelta(days=30*12*3)
-    start_date = datetime.date(2023, 1, 1)
-    end_date = datetime.date(2023, 12, 31)
+    start_date = datetime.date(2022, 6, 1)
+    end_date = datetime.date(2025, 2, 28)
     time_window = st.sidebar.date_input(
         "Velg dato",
         value=(start_date, end_date),
