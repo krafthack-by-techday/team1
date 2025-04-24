@@ -1,4 +1,5 @@
 import streamlit as st
+import datetime
 
 from frontend.config import Config
 
@@ -8,7 +9,16 @@ def controls():  # -> Config:
     st.sidebar.title("🔧 Konfigurasjon")
 
     metering_point_id = st.sidebar.text_input(
-        "Målepunkt ID", placeholder="Din Målepunkt ID"
+        "Målepunkt ID", placeholder="Din Målepunkt ID", disabled=True
+    )
+
+    # Dropdown for a predefined user
+    select_user = st.sidebar.selectbox(
+        "Hvem er du?",
+        [
+            "Jan Erik",
+            "Christine",
+        ]
     )
 
     # Dropdown menu for user selection
@@ -24,13 +34,23 @@ def controls():  # -> Config:
         max_value=10_000,
     )
 
-    # # Dropdown menu for user selection
-    # time_window_dropdown_values = ["Year", "Month", "Day"]
-    # time_window = st.sidebar.selectbox("Time window:", time_window_dropdown_values)
+    # Drowpdown for date interval
+    today = datetime.date.today()
+    last_3_years = today - datetime.timedelta(days=30*12*3)
+    start_date = datetime.date(2023, 1, 1)
+    end_date = datetime.date(2023, 12, 31)
+    time_window = st.sidebar.date_input(
+        "Velg dato",
+        value=(start_date, end_date),
+        min_value=last_3_years,
+        max_value=today,
+        format="YYYY-MM-DD"
+    )
 
     return Config(
         metering_point_id=metering_point_id,
+        select_user=select_user,
         compare_based_on="Forecast" if "Prognose" in compare_based_on else "History",
-        # time_window=time_window,
+        time_window=time_window,
         assumed_fixed_price=assumed_fixed_price,
     )
