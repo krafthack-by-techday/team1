@@ -70,8 +70,28 @@ if config.input_is_set is True:
 @st.dialog("Informasjon om Norgespriskalkulator")
 def vote(item):
     st.write(
-        "Ikke lad din Tesla kl 16."
-        "Hvis hele Norge lager Grandiossa 🍕 og lader Tesla 🏎️ til samme tid, så blir det strømutfall ⚡"
+        """
+        ## Gnisten – Din guide til Norgespris
+        Gnisten er en tjeneste som hjelper deg med å forstå hvordan norgespris påvirker din økonomi. Med Gnisten kan du enkelt sammenligne strømforbruksmønstre og tidsbestemt forbruk og se om Norgespris er det beste alternativet for deg.
+        
+        ## Hva er Norgespris?
+        Norgespris er en statlig støtteordning som tilbyr en fast strømpris på 40 øre per kilowattime (ekskl. mva) for husholdninger og fritidsboliger. Dette gir forutsigbare og stabile strømpriser, uavhengig av markedets svingninger.
+        
+        ## Hvordan fungerer Gnisten?
+        Med Gnisten kan du utforske forskjellige scenarier og se hvordan Norgespris sammenligner seg med andre strømavtaler. Tjenesten gir deg muligheten til å:
+        - Sammenligne strømpriser: Se hvordan Norgespris står seg mot dagens spotpriser og stromstøtte.
+        - Beregne kostnader: Få en oversikt over dine potensielle strømkostnader basert på ditt forbruksmønster.
+        - Simulere ulike forbruksscenarier: Utforsk hvordan endringer i ditt strømforbruk påvirker kostnadene med Norgespris og andre avtaler.
+        
+        ## Hvorfor bruke Gnisten?
+        Gnisten gir deg verktøyene du trenger for å ta informerte beslutninger om norgesprisen. Ved å bruke tjenesten kan du:
+        - Spare penger: Teste scenarier for ditt behov.
+        - Få trygghet: Forstå hvordan ulike avtaler påvirker din økonomi.
+        - Støtte din beslutting: Norgespris ja eller nei.
+
+        ## Hva koster det å burke gnisten?
+        Gnisten er gratis å bruke for alle husholdninger og fritidsboliger i Norge. Det er ingen skjulte kostnader eller avgifter.
+        """
     )
 
 
