@@ -69,7 +69,6 @@ def read_elhub_data(base_path=None, meter_dirs=None) -> dict[str, pd.DataFrame]:
                     df["Til"] = pd.to_datetime(df["Til"], format="%d.%m.%Y %H:%M")
 
                 dfs.append(df)
-                print(f"Successfully read: {os.path.basename(csv_file)}")
 
             except Exception as e:
                 print(f"Error reading {csv_file}: {e}")
@@ -90,28 +89,6 @@ def read_elhub_data(base_path=None, meter_dirs=None) -> dict[str, pd.DataFrame]:
             )
 
     return meter_data
-
-
-def get_consumption_data(meter_name=None) -> pd.DataFrame:
-    """
-    Get consumption data for a specific meter or all meters.
-
-    Parameters:
-    -----------
-    meter_name : str, optional
-        Name of the meter to get data for. If None, returns data for all meters.
-
-    Returns:
-    --------
-    pandas.DataFrame or dict: DataFrame for specified meter or dictionary of DataFrames.
-    """
-    all_data = read_elhub_data()
-
-    if meter_name is not None:
-        data = all_data.get(meter_name)
-    if data is None:
-        raise ValueError("Data is None")
-    return data
 
 
 if __name__ == "__main__":
