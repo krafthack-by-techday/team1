@@ -67,7 +67,7 @@ if config.input_is_set is True:
         )
 
 
-@st.dialog("Informasjon om Norgespriskalkulator")
+@st.dialog(title= "Informasjon om Norgespriskalkulator", width="large")
 def vote(item):
     st.write(
         """
@@ -80,7 +80,7 @@ def vote(item):
         ## Hvordan fungerer Gnisten?
         Med Gnisten kan du utforske forskjellige scenarier og se hvordan Norgespris sammenligner seg med andre strømavtaler. Tjenesten gir deg muligheten til å:
         - Sammenligne strømpriser: Se hvordan Norgespris står seg mot dagens spotpriser og stromstøtte.
-        - Beregne kostnader: Få en oversikt over dine potensielle strømkostnader basert på ditt forbruksmønster.
+        - Beregne kostnader: Få en oversikt over dine potensielle strømkostnader basert på ditt forbruksmønster i din bolig eller hytte. Data hentes fra ElHu i din bolig eller hytte. Data hentes fra ElHub.
         - Simulere ulike forbruksscenarier: Utforsk hvordan endringer i ditt strømforbruk påvirker kostnadene med Norgespris og andre avtaler.
         
         ## Hvorfor bruke Gnisten?
