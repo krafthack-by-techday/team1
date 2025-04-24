@@ -3,3 +3,4 @@ polars
 pandas
 pydantic
 requests
+plotly
