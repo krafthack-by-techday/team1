@@ -22,9 +22,9 @@ class Backend:
         self.fetcher = LocalSpotPriceFetcher(path_to_norway_data=Path(path))
 
     def get_spotpris_cost_per_hour(
-        self, start: datetime, end: datetime, meter_name: str = "Trydal_1"
+        self, start: datetime, end: datetime, meter_name: str = "Trydal_1", price_area: str = "NO1"
     ) -> pd.Series:
-        prices = self.fetcher.get_price(price_area="NO1", start=start, end=end)
+        prices = self.fetcher.get_price(price_area=price_area, start=start, end=end)
 
         all_data = read_elhub_data(meter_dirs=[meter_name])
 

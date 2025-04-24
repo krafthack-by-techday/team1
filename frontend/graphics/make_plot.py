@@ -3,7 +3,7 @@ import plotly.express as px
 import streamlit as st
 from utils.NorgesPlotter import NorgesPlotter
 
-# @st.cache_resource
+@st.cache_resource
 def make_plot(
         data: pd.DataFrame = None,
     ) -> None:
