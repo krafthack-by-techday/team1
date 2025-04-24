@@ -172,3 +172,7 @@ cython_debug/
 .vscode
 
 .python_packages
+
+.python-version
+pyproject.toml
+uv.lock
