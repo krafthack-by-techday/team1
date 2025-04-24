@@ -1,7 +1,6 @@
 import os
 import glob
 import pandas as pd
-from datetime import datetime
 
 def read_elhub_data(base_path=None, meter_dirs=None) -> dict[pd.DataFrame]:
     """

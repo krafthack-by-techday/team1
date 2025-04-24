@@ -6,4 +6,4 @@ init:
     .venv/bin/pip3 install -r requirements.txt
 
 start_gui:
-    .venv/bin/streamlit run norgespriskalkulator.py
+    .venv/bin/streamlit run frontend/Norgespriskalkulator.py

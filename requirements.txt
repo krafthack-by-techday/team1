@@ -6,3 +6,5 @@ pytest
 setuptools
 requests
 plotly
+python-dotenv
+numpy
