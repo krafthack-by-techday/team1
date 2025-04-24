@@ -1,0 +1,1 @@
+This folder contains the definition of ports, i.e. abstract interfaces, which are implemented by different adapters. 

@@ -2,5 +2,7 @@ streamlit
 polars
 pandas
 pydantic
+pytest
+setuptools
 requests
 plotly
