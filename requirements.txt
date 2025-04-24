@@ -2,3 +2,5 @@ streamlit
 polars
 pandas
 pydantic
+pytest
+setuptools
