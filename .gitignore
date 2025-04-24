@@ -8,6 +8,8 @@ __pycache__/
 *.xlsx
 *.xls
 ########################################
+!tests/test_backend/test_adapter/test_price_fetcher/testfiles/PriceDayAheadNO1_2022_2025.csv
+
 local/ 
 pytest.xml
 __azurite*

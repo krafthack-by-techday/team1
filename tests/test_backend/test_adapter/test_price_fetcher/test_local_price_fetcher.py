@@ -36,8 +36,8 @@ class TestLocalSpotPriceFetcher:
 
         prices = fetcher.get_price(
             price_area="NO1",
-            start=datetime(2025, 4, 16, hour=20, tzinfo=ZoneInfo("UTC")),
-            end=datetime(2025, 4, 16, hour=21, tzinfo=ZoneInfo("UTC")),
+            start=datetime(2023, 1, 1, hour=0, tzinfo=ZoneInfo("UTC")),
+            end=datetime(2023, 12, 31, hour=23, tzinfo=ZoneInfo("UTC")),
         )
 
-        assert len(prices) == 2
+        assert len(prices) == 1 * 365 * 24

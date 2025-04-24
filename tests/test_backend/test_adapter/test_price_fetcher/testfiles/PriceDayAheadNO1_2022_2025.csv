@@ -1,0 +1,21 @@
+timestamp,id,instance_time,scenario,ingestion_time,value,custom_data
+2025-04-16 22:00:00.0000000,baz.no1,,,2025-04-15 11:05:57.5926405,"1,00","{
+  ""ingested_by"": ""bar"",
+  ""pipeline"": ""foo"",
+  ""pipeline_run_id"": ""123""
+}"
+2025-04-16 21:00:00.0000000,baz.no1,,,2025-04-15 11:05:57.5926405,"42,00","{
+  ""ingested_by"": ""bar"",
+  ""pipeline"": ""foo"",
+  ""pipeline_run_id"": ""123""
+}"
+2025-04-16 20:00:00.0000000,baz.no1,,,2025-04-15 11:05:57.5926405,"12,34","{
+  ""ingested_by"": ""bar"",
+  ""pipeline"": ""foo"",
+  ""pipeline_run_id"": ""123""
+}"
+2025-04-16 19:00:00.0000000,baz.no1,,,2025-04-15 11:05:57.5926405,"3,14","{
+  ""ingested_by"": ""bar"",
+  ""pipeline"": ""foo"",
+  ""pipeline_run_id"": ""123""
+}"
