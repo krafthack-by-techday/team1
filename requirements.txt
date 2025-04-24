@@ -2,3 +2,4 @@ streamlit
 polars
 pandas
 pydantic
+requests
