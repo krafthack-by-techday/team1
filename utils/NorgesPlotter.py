@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
-import numpy as np
-from typing import Optional, Union
+from typing import Union
 
 class NorgesPlotter:
     def __init__(self, data: pd.DataFrame) -> None:
@@ -71,10 +70,7 @@ class NorgesPlotter:
         :param color_above: Color used when trace1 is above trace2.
         :param color_below: Color used when trace2 is above trace1.
         """
-        import plotly.graph_objects as go
-        import numpy as np
 
-        # Get traces
         trace1 = self.fig.data[trace1_index]
         trace2 = self.fig.data[trace2_index]
 
@@ -121,7 +117,7 @@ class NorgesPlotter:
             self.fig.show(config={"displayModeBar": False})
         
 if __name__ == "__main__":
-    # A small example for creating the plot
+    # A small example for showing the plot
     data = pd.DataFrame({
         "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         "y": [10, 15, 13, 17, 20, 25, 30, 29, 40, 17]
