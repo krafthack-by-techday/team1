@@ -1,8 +1,9 @@
-from datetime import datetime
+from typing import Literal
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from pydantic import BaseModel
 
 st.set_page_config(page_title="Norgespriskalkulator", page_icon="🧮")
 
@@ -10,14 +11,64 @@ st.write("""### Hei 👋 Her kan du sjekke om Norgesprisen lønner seg for deg �
          """)
 
 
-start = datetime.now()
+class Config(BaseModel):
+    metering_point_id: str
+    compare_based_on: Literal["History", "Forecast"]
+    assumed_fixed_price: float
+    # time_window: Literal["Year", "Month", "Day"]
 
 
-def make_plot(time_window, compare_based_on):
+def controls():  # -> Config:
+    # Målepunkt ID
+    st.sidebar.title("🔧 Konfigurasjon")
+
+    metering_point_id = st.sidebar.text_input(
+        "Målepunkt ID", placeholder="Din Målepunkt ID"
+    )
+
+    # Dropdown menu for user selection
+    compare_against_dropdown_values = ["Historikk", "Prognose (⚡💀)"]
+    compare_based_on = st.sidebar.selectbox(
+        "Beregn basert på", compare_against_dropdown_values
+    )
+
+    assumed_fixed_price = st.sidebar.number_input(
+        "Antatt Norgespris (Øre/kWh)",
+        min_value=0,
+        value=40,
+        max_value=10_000,
+    )
+
+    # # Dropdown menu for user selection
+    # time_window_dropdown_values = ["Year", "Month", "Day"]
+    # time_window = st.sidebar.selectbox("Time window:", time_window_dropdown_values)
+
+    return Config(
+        metering_point_id=metering_point_id,
+        compare_based_on="Forecast" if "Prognose" in compare_based_on else "History",
+        # time_window=time_window,
+        assumed_fixed_price=assumed_fixed_price,
+    )
+
+
+config = controls()
+
+
+def get_price_area(metering_point_id: str) -> str | None:
+    if metering_point_id != "Din Målepunkt ID":
+        return "NO42"
+    return None
+
+
+if (price_area := get_price_area(config.metering_point_id)) is not None:
+    st.text(f"Din målepunkt er i prisområdet {price_area}")
+
+
+def make_plot():
     # --- Hard-coded sample data in a DataFrame ---
     df = pd.DataFrame(
         {
-            time_window: [1, 2, 3, 4, 5],
+            "foo": [1, 2, 3, 4, 5],
             "Series 1": [10, 20, 30, 40, 50],
             "Series 2": [15, 25, 35, 45, 55],
         }
@@ -26,38 +77,13 @@ def make_plot(time_window, compare_based_on):
     # --- Create a Plotly Express line chart ---
     fig = px.line(
         df,
-        x=time_window,
+        x="foo",
         y=["Series 1", "Series 2"],
         markers=True,
-        labels={
-            time_window: time_window,
-            "value": compare_based_on,
-            "variable": "Series",
-        },
-    )
-    fig.update_layout(
-        title=f"{compare_based_on} over {time_window}",
-        xaxis_title=time_window,
-        yaxis_title=compare_based_on,
     )
 
     # --- Render in Streamlit ---
     st.plotly_chart(fig, use_container_width=True)
 
 
-# Målepunkt ID
-metering_point_id = st.text_input("Målepunkt ID", placeholder="Enter Målepunkt ID")
-
-
-# Dropdown menu for user selection
-compare_against_dropdown_values = ["History", "Forecast (⚡💀)"]
-compare_based_on = st.selectbox(
-    "Compare against prices from:", compare_against_dropdown_values
-)
-
-
-# Dropdown menu for user selection
-time_window_dropdown_values = ["Year", "Month", "Day"]
-time_window = st.selectbox("Time window:", time_window_dropdown_values)
-
-make_plot(time_window, compare_based_on)
+make_plot()
