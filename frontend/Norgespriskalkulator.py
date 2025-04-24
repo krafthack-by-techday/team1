@@ -3,32 +3,83 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 from PIL import Image
+import pandas as pd
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from typing import Dict, List
 
 try:
     from frontend.graphics.controls import controls
     from frontend.graphics.elements import colored_box
     from frontend.graphics.make_plot import make_plot
     from frontend.utils.utils import get_price_area
+    from backend.app import Backend
 except ModuleNotFoundError:
     msg = "Could not import code, did you run pip install -e . ?"
     raise ModuleNotFoundError(msg)
 
 load_dotenv("CONFIG.env")
-logo = Image.open("assets/logo-green.png")
-icon = Image.open("assets/ikon-gold.png")
+logo = Image.open("assets/logo-green-nobackground.png")
+icon = Image.open("assets/ikon-gold-nobackground.png")
 
 
 st.set_page_config(page_title="Norgespriskalkulator", page_icon=icon, layout="wide")
+app = Backend()
+
+@st.cache_data
+def henter_og_beregner_data(user: str, fastpris=int) -> Dict[str, pd.DataFrame]:
+    """
+    Aggregates specified value columns in a time-indexed DataFrame.
+
+    :param data: DataFrame with a DatetimeIndex.
+    :param value_columns: List of column names to aggregate.
+    :return: Dictionary with aggregated DataFrames for each level.
+
+    NB. The function name is shown in the app so i've given it a norwegian name
+    """
+    spot_cost = app.get_norgespris_cost_per_hour(
+        start=datetime(2023, 1, 1, hour=0, tzinfo=ZoneInfo("UTC")),
+        end=datetime(2023, 12, 31, hour=23, tzinfo=ZoneInfo("UTC")),
+        meter_name=user,
+    )
+
+    norgespris_cost = app.get_fastpris_cost_per_hour(
+            fastpris=fastpris,
+            start=datetime(2023, 1, 1, hour=0, tzinfo=ZoneInfo("UTC")),
+            end=datetime(2023, 12, 31, hour=23, tzinfo=ZoneInfo("UTC")),
+            meter_name=user,
+        )
+
+    data = pd.concat([spot_cost, norgespris_cost], axis=1)
+    data.columns = ["Spotpris", "Norgespris"]
+    data["Spotpris"] = data["Spotpris"].astype(float)
+    data["Norgespris"] = data["Norgespris"].astype(float)
+
+    # removing index because of interactive date-picker, can be readded later
+    data.index = data.index.tz_convert(None)
+
+    value_columns = ["Spotpris", "Norgespris"]
+
+    if not isinstance(data.index, pd.DatetimeIndex):
+        raise ValueError("Data index must be a DatetimeIndex.")
+
+    return {
+        "hour": data[value_columns].resample("H").sum(),
+        "day": data[value_columns].resample("D").sum(),
+        "month": data[value_columns].resample("M").sum(),
+        "year": data[value_columns].resample("Y").sum()
+    }
 
 with st.sidebar:
     st.image(logo, use_container_width=False, width=200)
 
 
-st.write("""### Hei 👋 Her kan du sjekke om Norgesprisen lønner seg for deg 💰""")
+st.write("### Hei 👋")
+st.write("### Mister du også helt Gnisten av hva Norgespris er?")
+st.write("Her kan du sjekke om Norgesprisen lønner seg for deg 💰""")
 
 norgespriscolor = os.environ["NORGESPRISCOLOR"]
 spotpriscolor = os.environ["SPOTPRISCOLOR"]
-
 
 # Build the page
 
@@ -37,11 +88,37 @@ config = controls()
 if (price_area := get_price_area(config.metering_point_id)) is not None:
     st.text(f"Din målepunkt er i prisområdet {price_area}")
 
-make_plot()
+user_mapping = {
+    "Jan Erik": {
+        "bio": "Jan Erik, 39 år, bor i enebolig i NO2",
+        "timeseries": "Trydal_1"
+    },
+    "Christine": {
+        "bio": "Christine, 29 år, bor i leilighet i NO1",
+        "timeseries": "christine"
+    },
+}
+
+st.write(f"Beregner for {user_mapping[config.select_user]["bio"]}")
+
+hour_tab, day_tab, month_tab, year_tab = st.tabs(
+    ["Time", "Dag", "Måned", "År"]
+)
+
+data = henter_og_beregner_data(user_mapping[config.select_user]["timeseries"], fastpris=config.assumed_fixed_price)
+
+with hour_tab:
+    hour_plot = make_plot(data=data["hour"].loc[config.time_window[0]: config.time_window[1]])
+with day_tab:
+    day_plot = make_plot(data=data["day"].loc[config.time_window[0]: config.time_window[1]])
+with month_tab:
+    month_plot = make_plot(data=data["month"].loc[config.time_window[0]: config.time_window[1]])
+with year_tab:
+    year_plot = make_plot(data=data["year"].loc[config.time_window[0]: config.time_window[1]])
 
 
-cost_with_spotprice = 1
-cost_with_norgesprice = 1
+cost_with_spotprice = data["day"].loc[config.time_window[0]: config.time_window[1]]["Spotpris"].sum()
+cost_with_norgesprice = data["day"].loc[config.time_window[0]: config.time_window[1]]["Norgespris"].sum()
 
 
 if config.input_is_set is True:
@@ -51,8 +128,8 @@ if config.input_is_set is True:
     with col1:
         st.markdown(
             colored_box(
-                f"Strømregning med Norgespris: {int(cost_with_norgesprice)} NOK",
-                bg_color=norgespriscolor,
+                f"Strømregning med Norgespris: {cost_with_norgesprice:,.0f} NOK".replace(",", " "),
+                bg_color="#C2EDA9",
             ),
             unsafe_allow_html=True,
         )
@@ -60,8 +137,8 @@ if config.input_is_set is True:
     with col2:
         st.markdown(
             colored_box(
-                f"Strømregning med spotpris: {int(cost_with_spotprice)} NOK",
-                bg_color=spotpriscolor,
+                f"Strømregning med SPOT: {cost_with_spotprice:,.0f} NOK".replace(",", " "),
+                bg_color="#FEEDC9",
             ),
             unsafe_allow_html=True,
         )

@@ -1,25 +1,31 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from utils.NorgesPlotter import NorgesPlotter
 
+# @st.cache_resource
+def make_plot(
+        data: pd.DataFrame = None,
+    ) -> None:
 
-def make_plot():
-    # --- Hard-coded sample data in a DataFrame ---
-    df = pd.DataFrame(
-        {
-            "foo": [1, 2, 3, 4, 5],
-            "Series 1": [10, 20, 30, 40, 50],
-            "Series 2": [15, 25, 35, 45, 55],
-        }
+    plotter = NorgesPlotter(data)
+    plotter.add_line(
+        x_col="index",
+        y_col="Norgespris",
+        title="Sammenligning av kostnader",
+        name="Norgespris",
+        x_title="X-axis",
+        y_title="Y-axis",
+        line_color="#469d13"
     )
-
-    # --- Create a Plotly Express line chart ---
-    fig = px.line(
-        df,
-        x="foo",
-        y=["Series 1", "Series 2"],
-        markers=True,
+    plotter.add_line(
+        x_col="index",
+        y_col="Spotpris",
+        title="Sammenligning av kostnader",
+        name="SPOT",
+        x_title="X-axis",
+        y_title="Y-axis",
+        line_color="#d29d2f"
     )
-
-    # --- Render in Streamlit ---
-    st.plotly_chart(fig, use_container_width=True)
+    plotter.shade_between_lines()
+    st.plotly_chart(plotter.show_plot(streamlit_mode=True), config=({"displayModeBar": False}))

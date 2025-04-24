@@ -41,7 +41,7 @@ class NorgesPlotter:
         """
         dataset = data if data is not None else self.data
         self.fig.add_trace(go.Scatter(
-            x=dataset[x_col],
+            x=dataset.index if x_col == "index" else dataset[x_col],
             y=dataset[y_col],
             mode='lines',
             name=name,
@@ -61,34 +61,26 @@ class NorgesPlotter:
         trace2_index=1,
         color_above="#C2EDA9",
         color_below="#FEEDC9"
-    ) -> None:
+    ):
         """
-        Shades the area between two traces based on which is higher.
-
-        :param trace1_index: The index of the first trace in the figure.
-        :param trace2_index: The index of the second trace in the figure.
-        :param color_above: Color used when trace1 is above trace2.
-        :param color_below: Color used when trace2 is above trace1.
+        Shades between two traces even if x values are timestamps.
         """
-
         trace1 = self.fig.data[trace1_index]
         trace2 = self.fig.data[trace2_index]
 
-        x = trace1['x']
+        x = pd.to_datetime(trace1['x'])  # convert to datetime just in case
         y1 = trace1['y']
         y2 = trace2['y']
 
-        # Loop through each pair of consecutive points
         for i in range(len(x) - 1):
-            # Coordinates for the current slice
-            x0, x1 = x[i], x[i+1]
-            y1_0, y1_1 = y1[i], y1[i+1]
-            y2_0, y2_1 = y2[i], y2[i+1]
+            x0 = x[i]
+            x1 = x[i + 1]
+            y1_0 = y1[i]
+            y1_1 = y1[i + 1]
+            y2_0 = y2[i]
+            y2_1 = y2[i + 1]
 
-            if y1_0 + y1_1 > y2_0 + y2_1:
-                fill_color = color_above
-            else:
-                fill_color = color_below
+            fill_color = color_above if (y1_0 + y1_1) / 2 > (y2_0 + y2_1) / 2 else color_below
 
             self.fig.add_trace(go.Scatter(
                 x=[x0, x1, x1, x0],
@@ -97,9 +89,27 @@ class NorgesPlotter:
                 fill="toself",
                 fillcolor=fill_color,
                 line=dict(width=0),
-                showlegend=False,
-                hoverinfo="skip"
+                hoverinfo="skip",
+                showlegend=False
             ))
+
+        self.fig.add_trace(go.Bar(
+            x=[None],
+            y=[None],
+            marker=dict(color=color_above),
+            name='Norgespris dyrere',
+            showlegend=True,
+            hoverinfo='skip'
+        ))
+
+        self.fig.add_trace(go.Bar(
+            x=[None],
+            y=[None],
+            marker=dict(color=color_below),
+            name='SPOT dyrere',
+            showlegend=True,
+            hoverinfo='skip'
+        ))
 
         
     def show_plot(self, streamlit_mode=False) -> Union[None, go.Figure]:
@@ -119,18 +129,15 @@ class NorgesPlotter:
 if __name__ == "__main__":
     # A small example for showing the plot
     data = pd.DataFrame({
-        "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        "y": [10, 15, 13, 17, 20, 25, 30, 29, 40, 17]
-    })
-    more_data = pd.DataFrame({
-        "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        "y": [20, 25, 13, 7, 10, 23, 28, 25, 37, 13]
-    })
+            "x": pd.date_range(start="2023-01-01 00:00", periods=10, freq="h"),
+            "y1": [10, 15, 13, 17, 20, 25, 30, 29, 40, 17],
+            "y2": [20, 25, 13, 7, 10, 23, 28, 25, 37, 13]
+        })
     
     plotter = NorgesPlotter(data)
     plotter.add_line(
         x_col="x",
-        y_col="y",
+        y_col="y1",
         title="Example Line Plot",
         name="line1",
         x_title="X-axis",
@@ -138,9 +145,8 @@ if __name__ == "__main__":
         line_color="#469d13"
     )
     plotter.add_line(
-        data=more_data,
         x_col="x",
-        y_col="y",
+        y_col="y2",
         title="Example Line Plot",
         name="line2",
         x_title="X-axis",

@@ -26,7 +26,7 @@ class Backend:
     ) -> pd.Series:
         prices = self.fetcher.get_price(price_area="NO1", start=start, end=end)
 
-        all_data = read_elhub_data()
+        all_data = read_elhub_data(meter_dirs=[meter_name])
 
         sample_consumption_data = all_data[meter_name]
 
@@ -49,7 +49,7 @@ class Backend:
             prices.append((time, fastpris))
             time += timedelta(hours=1)
 
-        all_data = read_elhub_data()
+        all_data = read_elhub_data(meter_dirs=[meter_name])
 
         sample_consumption_data = all_data[meter_name]
 
