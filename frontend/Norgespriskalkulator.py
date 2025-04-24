@@ -27,7 +27,7 @@ st.set_page_config(page_title="Norgespriskalkulator", page_icon=icon, layout="wi
 app = Backend()
 
 @st.cache_data
-def henter_og_beregner_data(user: str, fastpris=int) -> Dict[str, pd.DataFrame]:
+def henter_og_beregner_data(user: str, fastpris: int, price_area: str) -> Dict[str, pd.DataFrame]:
     """
     Aggregates specified value columns in a time-indexed DataFrame.
 
@@ -37,10 +37,11 @@ def henter_og_beregner_data(user: str, fastpris=int) -> Dict[str, pd.DataFrame]:
 
     NB. The function name is shown in the app so i've given it a norwegian name
     """
-    spot_cost = app.get_norgespris_cost_per_hour(
+    spot_cost = app.get_spotpris_cost_per_hour(
         start=datetime(2023, 1, 1, hour=0, tzinfo=ZoneInfo("UTC")),
         end=datetime(2023, 12, 31, hour=23, tzinfo=ZoneInfo("UTC")),
         meter_name=user,
+        price_area=price_area
     )
 
     norgespris_cost = app.get_fastpris_cost_per_hour(
@@ -64,6 +65,7 @@ def henter_og_beregner_data(user: str, fastpris=int) -> Dict[str, pd.DataFrame]:
         raise ValueError("Data index must be a DatetimeIndex.")
 
     return {
+        "original": data,
         "hour": data[value_columns].resample("H").sum(),
         "day": data[value_columns].resample("D").sum(),
         "month": data[value_columns].resample("M").sum(),
@@ -91,11 +93,13 @@ if (price_area := get_price_area(config.metering_point_id)) is not None:
 user_mapping = {
     "Jan Erik": {
         "bio": "Jan Erik, 39 år, bor i enebolig i NO2",
-        "timeseries": "Trydal_1"
+        "timeseries": "Trydal_1",
+        "price_area": "NO2"
     },
     "Christine": {
         "bio": "Christine, 29 år, bor i leilighet i NO1",
-        "timeseries": "christine"
+        "timeseries": "christine",
+        "price_area": "NO1"
     },
 }
 
@@ -105,20 +109,32 @@ hour_tab, day_tab, month_tab, year_tab = st.tabs(
     ["Time", "Dag", "Måned", "År"]
 )
 
-data = henter_og_beregner_data(user_mapping[config.select_user]["timeseries"], fastpris=config.assumed_fixed_price)
+data = henter_og_beregner_data(
+    user_mapping[config.select_user]["timeseries"],
+    fastpris=config.assumed_fixed_price,
+    price_area=user_mapping[config.select_user]["price_area"]
+)
 
 with hour_tab:
     hour_plot = make_plot(data=data["hour"].loc[config.time_window[0]: config.time_window[1]])
+    with st.expander("Se som tabell"):
+        st.dataframe(data["hour"].loc[config.time_window[0]: config.time_window[1]])
 with day_tab:
     day_plot = make_plot(data=data["day"].loc[config.time_window[0]: config.time_window[1]])
+    with st.expander("Se som tabell"):
+        st.dataframe(data["day"].loc[config.time_window[0]: config.time_window[1]])
 with month_tab:
     month_plot = make_plot(data=data["month"].loc[config.time_window[0]: config.time_window[1]])
+    with st.expander("Se som tabell"):
+        st.dataframe(data["month"].loc[config.time_window[0]: config.time_window[1]])
 with year_tab:
     year_plot = make_plot(data=data["year"].loc[config.time_window[0]: config.time_window[1]])
+    with st.expander("Se som tabell"):
+        st.dataframe(data["year"].loc[config.time_window[0]: config.time_window[1]])
 
 
-cost_with_spotprice = data["day"].loc[config.time_window[0]: config.time_window[1]]["Spotpris"].sum()
-cost_with_norgesprice = data["day"].loc[config.time_window[0]: config.time_window[1]]["Norgespris"].sum()
+cost_with_spotprice = data["original"].loc[config.time_window[0]: config.time_window[1]]["Spotpris"].sum()
+cost_with_norgesprice = data["original"].loc[config.time_window[0]: config.time_window[1]]["Norgespris"].sum()
 
 
 if config.input_is_set is True:
