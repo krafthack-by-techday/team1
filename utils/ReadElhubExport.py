@@ -3,7 +3,7 @@ import glob
 import pandas as pd
 from datetime import datetime
 
-def read_elhub_data(base_path=None, meter_dirs=None):
+def read_elhub_data(base_path=None, meter_dirs=None) -> dict[pd.DataFrame]:
     """
     Read all CSV files from specified meter directories and concatenate them.
     
@@ -27,7 +27,7 @@ def read_elhub_data(base_path=None, meter_dirs=None):
         meter_dirs = [d for d in os.listdir(base_path) 
                      if os.path.isdir(os.path.join(base_path, d))]
     
-    meter_data = {}
+    meter_data = {} 
     
     for meter_dir in meter_dirs:
         meter_path = os.path.join(base_path, meter_dir)
@@ -81,7 +81,7 @@ def read_elhub_data(base_path=None, meter_dirs=None):
         
     return meter_data
 
-def get_consumption_data(meter_name=None):
+def get_consumption_data(meter_name=None)-> dict[pd.DataFrame]:
     """
     Get consumption data for a specific meter or all meters.
     
