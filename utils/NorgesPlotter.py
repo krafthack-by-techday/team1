@@ -1,8 +1,10 @@
 import pandas as pd
 import plotly.graph_objects as go
+import numpy as np
+from typing import Optional, Union
 
 class NorgesPlotter:
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame) -> None:
         """
         Initializes the NorgesPlotter with a DataFrame containing Norwegian data.
 
@@ -25,8 +27,9 @@ class NorgesPlotter:
             title: str = "Line Plot",
             x_title: str = "X-axis",
             y_title: str = "Y-axis",
-            data: pd.DataFrame = None
-        ):
+            data: pd.DataFrame = None,
+            line_color: str = None
+        ) -> None:
         """
         Adds a line trace to the plot using the provided x and y columns.
 
@@ -42,7 +45,8 @@ class NorgesPlotter:
             x=dataset[x_col],
             y=dataset[y_col],
             mode='lines',
-            name=name
+            name=name,
+            line=dict(color=line_color, width=5) if line_color else None,
         ))
         self.fig.update_layout(
             title=title,
@@ -50,23 +54,27 @@ class NorgesPlotter:
             yaxis_title=y_title
 
         )
+  
 
     def shade_between_lines(
-            self,
-            trace1_index: int = 0,
-            trace2_index: int = 1,
-            color_above: str = "rgba(255, 0, 0, 0.1)",
-            color_below: str = "rgba(0, 0, 255, 0.1)"
-        ):
+        self,
+        trace1_index=0,
+        trace2_index=1,
+        color_above="#C2EDA9",
+        color_below="#FEEDC9"
+    ) -> None:
         """
-        Shades the area between two existing traces in the plot.
+        Shades the area between two traces based on which is higher.
 
         :param trace1_index: The index of the first trace in the figure.
         :param trace2_index: The index of the second trace in the figure.
-        :param color_above: The color to use when the first trace is above the second.
-        :param color_below: The color to use when the second trace is above the first.
+        :param color_above: Color used when trace1 is above trace2.
+        :param color_below: Color used when trace2 is above trace1.
         """
-        # Get the x and y data from the previousely added traces
+        import plotly.graph_objects as go
+        import numpy as np
+
+        # Get traces
         trace1 = self.fig.data[trace1_index]
         trace2 = self.fig.data[trace2_index]
 
@@ -74,32 +82,31 @@ class NorgesPlotter:
         y1 = trace1['y']
         y2 = trace2['y']
 
-        # Add the first shaded area (y1 > y2)
-        self.fig.add_trace(go.Scatter(
-            x=x,
-            y=[max(y1[i], y2[i]) for i in range(len(y1))],  # Upper boundary
-            mode='lines',
-            fill='tonexty',
-            fillcolor=color_above,
-            line=dict(color="rgba(0,0,0,0)"), #hiding the "helper" line
-            showlegend=False,
-            hoverinfo="skip"
-        ))
+        # Loop through each pair of consecutive points
+        for i in range(len(x) - 1):
+            # Coordinates for the current slice
+            x0, x1 = x[i], x[i+1]
+            y1_0, y1_1 = y1[i], y1[i+1]
+            y2_0, y2_1 = y2[i], y2[i+1]
 
-        # Add the second shaded area (y2 > y1)
-        self.fig.add_trace(go.Scatter(
-            x=x,
-            y=[min(y1[i], y2[i]) for i in range(len(y1))],  # Lower boundary
-            mode='lines',
-            fill='tonexty',
-            fillcolor=color_below,
-            line=dict(color='rgba(0,0,0,0)'), #hiding the "helper" line
-            showlegend=False,
-            hoverinfo="skip"
-        ))
+            if y1_0 + y1_1 > y2_0 + y2_1:
+                fill_color = color_above
+            else:
+                fill_color = color_below
+
+            self.fig.add_trace(go.Scatter(
+                x=[x0, x1, x1, x0],
+                y=[y1_0, y1_1, y2_1, y2_0],
+                mode="lines",
+                fill="toself",
+                fillcolor=fill_color,
+                line=dict(width=0),
+                showlegend=False,
+                hoverinfo="skip"
+            ))
 
         
-    def show_plot(self, streamlit_mode=False):
+    def show_plot(self, streamlit_mode=False) -> Union[None, go.Figure]:
         """
         Displays the plot. If in Streamlit mode, it uses Streamlit's plotting function.
 
@@ -116,12 +123,12 @@ class NorgesPlotter:
 if __name__ == "__main__":
     # A small example for creating the plot
     data = pd.DataFrame({
-        "x": [1, 2, 3, 4, 5],
-        "y": [10, 15, 13, 17, 20]
+        "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "y": [10, 15, 13, 17, 20, 25, 30, 29, 40, 17]
     })
     more_data = pd.DataFrame({
-        "x": [1, 2, 3, 4, 5],
-        "y": [20, 25, 13, 7, 10]
+        "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "y": [20, 25, 13, 7, 10, 23, 28, 25, 37, 13]
     })
     
     plotter = NorgesPlotter(data)
@@ -131,7 +138,8 @@ if __name__ == "__main__":
         title="Example Line Plot",
         name="line1",
         x_title="X-axis",
-        y_title="Y-axis"
+        y_title="Y-axis",
+        line_color="#469d13"
     )
     plotter.add_line(
         data=more_data,
@@ -140,7 +148,8 @@ if __name__ == "__main__":
         title="Example Line Plot",
         name="line2",
         x_title="X-axis",
-        y_title="Y-axis"
+        y_title="Y-axis",
+        line_color="#d29d2f"
     )
     plotter.shade_between_lines()
     plotter.show_plot()
