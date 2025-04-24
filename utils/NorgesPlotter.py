@@ -1,7 +1,5 @@
-import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.io as pio
 
 class NorgesPlotter:
     def __init__(self, data: pd.DataFrame):
