@@ -4,3 +4,4 @@ pandas
 pydantic
 pytest
 setuptools
+requests
