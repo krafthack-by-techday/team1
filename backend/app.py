@@ -22,9 +22,17 @@ class Backend:
         self.fetcher = LocalSpotPriceFetcher(path_to_norway_data=Path(path))
 
     def get_spotpris_cost_per_hour(
-        self, start: datetime, end: datetime, meter_name: str = "Trydal_1", price_area: str = "NO1"
+        self,
+        start: datetime,
+        end: datetime,
+        meter_name: str = "Trydal_1",
+        price_area: str = "NO1",
     ) -> pd.Series:
-        prices = self.fetcher.get_price(price_area=price_area, start=start, end=end)
+        prices_in_eur = self.fetcher.get_price(
+            price_area=price_area, start=start, end=end
+        )
+
+        prices = [(date, price * 11 / 1e3) for (date, price) in prices_in_eur]
 
         all_data = read_elhub_data(meter_dirs=[meter_name])
 
@@ -39,14 +47,14 @@ class Backend:
         self,
         start: datetime,
         end: datetime,
-        fastpris: float,
+        fastpris_in_NOK: float,
         meter_name: str = "Trydal_1",
     ) -> pd.Series:
         prices = []
 
         time = start
         while time <= end:
-            prices.append((time, fastpris))
+            prices.append((time, fastpris_in_NOK))
             time += timedelta(hours=1)
 
         all_data = read_elhub_data(meter_dirs=[meter_name])

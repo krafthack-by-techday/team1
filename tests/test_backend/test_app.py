@@ -25,7 +25,7 @@ def test_get_fastpris_cost_per_hour():
 
     # Calculate cost using the spot price
     result = app.get_fastpris_cost_per_hour(
-        fastpris=10,
+        fastpris_in_NOK=10,
         start=datetime(2023, 1, 1, hour=0, tzinfo=ZoneInfo("UTC")),
         end=datetime(2023, 12, 31, hour=23, tzinfo=ZoneInfo("UTC")),
     )

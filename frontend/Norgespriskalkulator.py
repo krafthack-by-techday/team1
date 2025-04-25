@@ -1,19 +1,19 @@
 import os
+from datetime import datetime
+from typing import Dict, List
+from zoneinfo import ZoneInfo
 
+import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from PIL import Image
-import pandas as pd
-from datetime import datetime
-from zoneinfo import ZoneInfo
-from typing import Dict, List
 
 try:
+    from backend.app import Backend
     from frontend.graphics.controls import controls
     from frontend.graphics.elements import colored_box
     from frontend.graphics.make_plot import make_plot
     from frontend.utils.utils import get_price_area
-    from backend.app import Backend
 except ModuleNotFoundError:
     msg = "Could not import code, did you run pip install -e . ?"
     raise ModuleNotFoundError(msg)
@@ -24,10 +24,15 @@ icon = Image.open("assets/ikon-gold-nobackground.png")
 
 
 st.set_page_config(page_title="Norgespriskalkulator", page_icon=icon, layout="wide")
+
+
 app = Backend()
 
+
 @st.cache_data
-def henter_og_beregner_data(user: str, fastpris: int, price_area: str) -> Dict[str, pd.DataFrame]:
+def henter_og_beregner_data(
+    user: str, fastpris_in_nok: float, price_area: str
+) -> Dict[str, pd.DataFrame]:
     """
     Aggregates specified value columns in a time-indexed DataFrame.
 
@@ -41,15 +46,15 @@ def henter_og_beregner_data(user: str, fastpris: int, price_area: str) -> Dict[s
         start=datetime(2022, 6, 1, hour=0, tzinfo=ZoneInfo("UTC")),
         end=datetime(2025, 3, 1, hour=23, tzinfo=ZoneInfo("UTC")),
         meter_name=user,
-        price_area=price_area
+        price_area=price_area,
     )
 
     norgespris_cost = app.get_fastpris_cost_per_hour(
-            fastpris=fastpris,
-            start=datetime(2022, 6, 1, hour=0, tzinfo=ZoneInfo("UTC")),
-            end=datetime(2025, 3, 1, hour=23, tzinfo=ZoneInfo("UTC")),
-            meter_name=user,
-        )
+        fastpris_in_NOK=fastpris_in_nok,
+        start=datetime(2022, 6, 1, hour=0, tzinfo=ZoneInfo("UTC")),
+        end=datetime(2025, 3, 1, hour=23, tzinfo=ZoneInfo("UTC")),
+        meter_name=user,
+    )
 
     data = pd.concat([spot_cost, norgespris_cost], axis=1)
     data.columns = ["Spotpris", "Norgespris"]
@@ -69,16 +74,22 @@ def henter_og_beregner_data(user: str, fastpris: int, price_area: str) -> Dict[s
         "hour": data[value_columns].resample("H").sum(),
         "day": data[value_columns].resample("D").sum(),
         "month": data[value_columns].resample("M").sum(),
-        "year": data[value_columns].resample("Y").sum()
+        "year": data[value_columns].resample("Y").sum(),
     }
 
-with st.sidebar:
-    st.image(logo, use_container_width=False, width=200)
 
+# with st.sidebar:
+#     st.image(logo, use_container_width=False, width=200)
+
+with st.sidebar:
+    col1, col2, col3 = st.columns([1, 3, 1])
+    # the middle column gets 3× as much width as the side columns,
+    # so centering is automatic:
+    col2.image(logo, width=250)
 
 st.write("### Hei 👋")
 st.write("### Mister du også helt Gnisten av hva Norgespris er?")
-st.write("Her kan du sjekke om Norgesprisen lønner seg for deg 💰""")
+st.write("Her kan du sjekke om Norgesprisen lønner seg for deg 💰")
 
 norgespriscolor = os.environ["NORGESPRISCOLOR"]
 spotpriscolor = os.environ["SPOTPRISCOLOR"]
@@ -87,54 +98,66 @@ spotpriscolor = os.environ["SPOTPRISCOLOR"]
 
 config = controls()
 
-if (price_area := get_price_area(config.metering_point_id)) is not None:
-    st.text(f"Din målepunkt er i prisområdet {price_area}")
 
 user_mapping = {
     "Jan Erik": {
         "bio": "Jan Erik, 39 år, bor i enebolig i NO2",
         "timeseries": "Trydal_1",
-        "price_area": "NO2"
+        "price_area": "NO2",
     },
     "Christine": {
         "bio": "Christine, 29 år, bor i leilighet i NO1",
         "timeseries": "christine",
-        "price_area": "NO1"
+        "price_area": "NO1",
     },
 }
 
-st.write(f"Beregner for {user_mapping[config.select_user]["bio"]}")
+st.write(f"Beregner for {user_mapping[config.select_user]['bio']}")
 
-hour_tab, day_tab, month_tab, year_tab = st.tabs(
-    ["Time", "Dag", "Måned", "År"]
-)
+hour_tab, day_tab, month_tab, year_tab = st.tabs(["Time", "Dag", "Måned", "År"])
 
 data = henter_og_beregner_data(
     user_mapping[config.select_user]["timeseries"],
-    fastpris=config.assumed_fixed_price,
-    price_area=user_mapping[config.select_user]["price_area"]
+    fastpris_in_nok=config.assumed_fixed_price / 100,
+    price_area=user_mapping[config.select_user]["price_area"],
 )
 
 with hour_tab:
-    hour_plot = make_plot(data=data["hour"].loc[config.time_window[0]: config.time_window[1]])
+    hour_plot = make_plot(
+        data=data["hour"].loc[config.time_window[0] : config.time_window[1]]
+    )
     with st.expander("Se som tabell"):
-        st.dataframe(data["hour"].loc[config.time_window[0]: config.time_window[1]])
+        st.dataframe(data["hour"].loc[config.time_window[0] : config.time_window[1]])
 with day_tab:
-    day_plot = make_plot(data=data["day"].loc[config.time_window[0]: config.time_window[1]])
+    day_plot = make_plot(
+        data=data["day"].loc[config.time_window[0] : config.time_window[1]]
+    )
     with st.expander("Se som tabell"):
-        st.dataframe(data["day"].loc[config.time_window[0]: config.time_window[1]])
+        st.dataframe(data["day"].loc[config.time_window[0] : config.time_window[1]])
 with month_tab:
-    month_plot = make_plot(data=data["month"].loc[config.time_window[0]: config.time_window[1]])
+    month_plot = make_plot(
+        data=data["month"].loc[config.time_window[0] : config.time_window[1]]
+    )
     with st.expander("Se som tabell"):
-        st.dataframe(data["month"].loc[config.time_window[0]: config.time_window[1]])
+        st.dataframe(data["month"].loc[config.time_window[0] : config.time_window[1]])
 with year_tab:
-    year_plot = make_plot(data=data["year"].loc[config.time_window[0]: config.time_window[1]])
+    year_plot = make_plot(
+        data=data["year"].loc[config.time_window[0] : config.time_window[1]]
+    )
     with st.expander("Se som tabell"):
-        st.dataframe(data["year"].loc[config.time_window[0]: config.time_window[1]])
+        st.dataframe(data["year"].loc[config.time_window[0] : config.time_window[1]])
 
 
-cost_with_spotprice = data["original"].loc[config.time_window[0]: config.time_window[1]]["Spotpris"].sum()
-cost_with_norgesprice = data["original"].loc[config.time_window[0]: config.time_window[1]]["Norgespris"].sum()
+cost_with_spotprice = (
+    data["original"]
+    .loc[config.time_window[0] : config.time_window[1]]["Spotpris"]
+    .sum()
+)
+cost_with_norgesprice = (
+    data["original"]
+    .loc[config.time_window[0] : config.time_window[1]]["Norgespris"]
+    .sum()
+)
 
 
 if config.input_is_set is True:
@@ -144,7 +167,9 @@ if config.input_is_set is True:
     with col1:
         st.markdown(
             colored_box(
-                f"Strømregning med Norgespris: {cost_with_norgesprice:,.0f} NOK".replace(",", " "),
+                f"Strømregning med Norgespris: {cost_with_norgesprice:,.0f} NOK".replace(
+                    ",", " "
+                ),
                 bg_color="#C2EDA9",
             ),
             unsafe_allow_html=True,
@@ -153,14 +178,16 @@ if config.input_is_set is True:
     with col2:
         st.markdown(
             colored_box(
-                f"Strømregning med SPOT: {cost_with_spotprice:,.0f} NOK".replace(",", " "),
+                f"Strømregning med SPOT: {cost_with_spotprice:,.0f} NOK".replace(
+                    ",", " "
+                ),
                 bg_color="#FEEDC9",
             ),
             unsafe_allow_html=True,
         )
 
 
-@st.dialog(title= "Informasjon om Norgespriskalkulator", width="large")
+@st.dialog(title="Informasjon om Norgespriskalkulator", width="large")
 def vote(item):
     st.write(
         """

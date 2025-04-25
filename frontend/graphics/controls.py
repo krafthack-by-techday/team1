@@ -1,16 +1,14 @@
-import streamlit as st
 import datetime
+
+import streamlit as st
 
 from frontend.config import Config
 
 
 def controls():  # -> Config:
-    # Målepunkt ID
-    st.sidebar.title("🔧 Konfigurasjon")
-
-    metering_point_id = st.sidebar.text_input(
-        "Målepunkt ID", placeholder="Din Målepunkt ID", disabled=True
-    )
+    # metering_point_id = st.sidebar.text_input(
+    #     "Målepunkt ID", placeholder="Din Målepunkt ID", disabled=True
+    # )
 
     # Dropdown for a predefined user
     select_user = st.sidebar.selectbox(
@@ -18,7 +16,7 @@ def controls():  # -> Config:
         [
             "Jan Erik",
             "Christine",
-        ]
+        ],
     )
 
     # Dropdown menu for user selection
@@ -36,19 +34,21 @@ def controls():  # -> Config:
 
     # Drowpdown for date interval
     today = datetime.date.today()
-    last_3_years = today - datetime.timedelta(days=30*12*3)
-    start_date = datetime.date(2022, 6, 1)
-    end_date = datetime.date(2025, 2, 28)
+    # min_value = today - datetime.timedelta(days=30 * 13 * 1)
+
+    start_date = datetime.date(2024, 1, 1)
+    min_value = start_date
+    end_date = datetime.date(2025, 1, 1)
     time_window = st.sidebar.date_input(
         "Velg dato",
         value=(start_date, end_date),
-        min_value=last_3_years,
+        min_value=min_value,
         max_value=today,
-        format="YYYY-MM-DD"
+        format="YYYY-MM-DD",
     )
 
     return Config(
-        metering_point_id=metering_point_id,
+        # metering_point_id=metering_point_id,
         select_user=select_user,
         compare_based_on="Forecast" if "Prognose" in compare_based_on else "History",
         time_window=time_window,
