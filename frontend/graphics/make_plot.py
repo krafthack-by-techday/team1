@@ -18,16 +18,16 @@ def make_plot(
         title="Sammenligning av kostnader",
         name="Norgespris",
         x_title="Tid",
-        y_title="Kostnad",
+        y_title="Kostnad [NOK]",
         line_color="#469d13",
     )
     plotter.add_line(
         x_col="index",
         y_col="Spotpris",
         title="Sammenligning av kostnader",
-        name="Spotpris",
+        name="Spotpris m/ strømstøtte",
         x_title="Tid",
-        y_title="Kostnad",
+        y_title="Kostnad [NOK]",
         line_color="#d29d2f",
     )
     plotter.shade_between_lines()

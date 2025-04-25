@@ -53,7 +53,18 @@ class NorgesPlotter:
                 line=dict(color=line_color, width=5) if line_color else None,
             )
         )
-        self.fig.update_layout(title=title, xaxis_title=x_title, yaxis_title=y_title)
+        self.fig.update_layout(
+            title=title,
+            xaxis_title=x_title,
+            yaxis_title=y_title,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=0.99,
+                xanchor="left",
+                x=0.01,
+            ),
+        )
 
     def shade_between_lines(
         self,
@@ -138,27 +149,27 @@ class NorgesPlotter:
         #         )
         #     )
 
-        # self.fig.add_trace(
-        #     go.Bar(
-        #         x=[None],
-        #         y=[None],
-        #         marker=dict(color=color_above),
-        #         name="Norgespris dyrere",
-        #         showlegend=True,
-        #         hoverinfo="skip",
-        #     )
-        # )
+        self.fig.add_trace(
+            go.Bar(
+                x=[None],
+                y=[None],
+                marker=dict(color=color_above),
+                name="Norgespris dyrere",
+                showlegend=True,
+                hoverinfo="skip",
+            )
+        )
 
-        # self.fig.add_trace(
-        #     go.Bar(
-        #         x=[None],
-        #         y=[None],
-        #         marker=dict(color=color_below),
-        #         name="SPOT dyrere",
-        #         showlegend=True,
-        #         hoverinfo="skip",
-        #     )
-        # )
+        self.fig.add_trace(
+            go.Bar(
+                x=[None],
+                y=[None],
+                marker=dict(color=color_below),
+                name="Spotpris m/ strømstøtte dyrere",
+                showlegend=True,
+                hoverinfo="skip",
+            )
+        )
 
     def show_plot(self, streamlit_mode=False) -> Union[None, go.Figure]:
         """

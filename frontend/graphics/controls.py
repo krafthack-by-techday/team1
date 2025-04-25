@@ -36,7 +36,7 @@ def controls():  # -> Config:
     today = datetime.date.today()
     # min_value = today - datetime.timedelta(days=30 * 13 * 1)
 
-    start_date = datetime.date(2024, 1, 1)
+    start_date = datetime.date(2022, 6, 1)
     min_value = start_date
     end_date = datetime.date(2025, 1, 1)
     time_window = st.sidebar.date_input(
