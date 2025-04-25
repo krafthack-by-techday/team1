@@ -9,6 +9,19 @@ import pandas as pd
 from backend.adapter.price_fetcher.local_spot_price_fetcher import LocalSpotPriceFetcher
 from utils.ReadElhubExport import read_elhub_data
 
+STROEMSTOETTE_THRESHOLD = 0.75  # NOK/kWh
+
+
+def calculate_stroemstoette(price_in_NOK_per_kWh: float) -> float:
+    # Strømstøtte dekker 90 % av strømprisen over 93,75 øre/kWh (75 øre/kWh ekskl. mva.)
+
+    if price_in_NOK_per_kWh > STROEMSTOETTE_THRESHOLD:
+        price_in_NOK_per_kWh = (
+            STROEMSTOETTE_THRESHOLD
+            + (price_in_NOK_per_kWh - STROEMSTOETTE_THRESHOLD) * 0.1
+        )
+    return price_in_NOK_per_kWh
+
 
 class Backend:
     def __init__(self) -> None:
@@ -32,7 +45,11 @@ class Backend:
             price_area=price_area, start=start, end=end
         )
 
-        prices = [(date, price * 11 / 1e3) for (date, price) in prices_in_eur]
+        # fra Eur/MWh til NOK/kWh
+        prices = [
+            (date, calculate_stroemstoette(price * 11 / 1e3))
+            for (date, price) in prices_in_eur
+        ]
 
         all_data = read_elhub_data(meter_dirs=[meter_name])
 
