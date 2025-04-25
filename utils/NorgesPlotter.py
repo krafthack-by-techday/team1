@@ -1,7 +1,9 @@
 from typing import Union
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.graph_objs as go
 
 
 class NorgesPlotter:
@@ -67,55 +69,96 @@ class NorgesPlotter:
         trace2 = self.fig.data[trace2_index]
 
         x = pd.to_datetime(trace1["x"])  # convert to datetime just in case
-        y1 = trace1["y"]
-        y2 = trace2["y"]
 
-        for i in range(len(x) - 1):
-            x0 = x[i]
-            x1 = x[i + 1]
-            y1_0 = y1[i]
-            y1_1 = y1[i + 1]
-            y2_0 = y2[i]
-            y2_1 = y2[i + 1]
+        y1: np.ndarray = trace1["y"]
+        y2: np.ndarray = trace2["y"]
 
-            fill_color = (
-                color_above if (y1_0 + y1_1) / 2 > (y2_0 + y2_1) / 2 else color_below
-            )
+        # 1) compute where y1 >= y2
+        above = y1 >= y2
+        # find the boundaries of each contiguous segment
+        # we'll look for indices where 'above' flips
+        flip_idx = np.nonzero(np.diff(above.astype(int)))[0] + 1
+        # include start and end
+        seg_bounds = np.concatenate(([0], flip_idx, [len(x)]))
+
+        # 2) for each segment, build & plot one filled polygon
+        for i in range(len(seg_bounds) - 1):
+            start, end = seg_bounds[i], seg_bounds[i + 1]
+            xi = x[start:end]
+            y1i = y1[start:end]
+            y2i = y2[start:end]
+            # skip degenerate
+            if len(xi) < 2:
+                continue
+
+            # build closed loop: go out on y1, back on y2
+            xx = np.concatenate([xi, xi[::-1]])
+            yy = np.concatenate([y1i, y2i[::-1]])
+
+            color = color_above if above[start] else color_below
 
             self.fig.add_trace(
-                go.Scatter(
-                    x=[x0, x1, x1, x0],
-                    y=[y1_0, y1_1, y2_1, y2_0],
-                    mode="lines",
+                go.Scattergl(
+                    x=xx,
+                    y=yy,
+                    mode="none",  # no lines or markers
                     fill="toself",
-                    fillcolor=fill_color,
-                    line=dict(width=0),
+                    fillcolor=color,
                     hoverinfo="skip",
                     showlegend=False,
                 )
             )
 
-        self.fig.add_trace(
-            go.Bar(
-                x=[None],
-                y=[None],
-                marker=dict(color=color_above),
-                name="Norgespris dyrere",
-                showlegend=True,
-                hoverinfo="skip",
-            )
-        )
+        # x = pd.to_datetime(trace1["x"])  # convert to datetime just in case
+        # y1 = trace1["y"]
+        # y2 = trace2["y"]
 
-        self.fig.add_trace(
-            go.Bar(
-                x=[None],
-                y=[None],
-                marker=dict(color=color_below),
-                name="SPOT dyrere",
-                showlegend=True,
-                hoverinfo="skip",
-            )
-        )
+        # for i in range(len(x) - 1):
+        #     x0 = x[i]
+        #     x1 = x[i + 1]
+        #     y1_0 = y1[i]
+        #     y1_1 = y1[i + 1]
+        #     y2_0 = y2[i]
+        #     y2_1 = y2[i + 1]
+
+        #     fill_color = (
+        #         color_above if (y1_0 + y1_1) / 2 > (y2_0 + y2_1) / 2 else color_below
+        #     )
+
+        #     self.fig.add_trace(
+        #         go.Scatter(
+        #             x=[x0, x1, x1, x0],
+        #             y=[y1_0, y1_1, y2_1, y2_0],
+        #             mode="lines",
+        #             fill="toself",
+        #             fillcolor=fill_color,
+        #             line=dict(width=0),
+        #             hoverinfo="skip",
+        #             showlegend=False,
+        #         )
+        #     )
+
+        # self.fig.add_trace(
+        #     go.Bar(
+        #         x=[None],
+        #         y=[None],
+        #         marker=dict(color=color_above),
+        #         name="Norgespris dyrere",
+        #         showlegend=True,
+        #         hoverinfo="skip",
+        #     )
+        # )
+
+        # self.fig.add_trace(
+        #     go.Bar(
+        #         x=[None],
+        #         y=[None],
+        #         marker=dict(color=color_below),
+        #         name="SPOT dyrere",
+        #         showlegend=True,
+        #         hoverinfo="skip",
+        #     )
+        # )
 
     def show_plot(self, streamlit_mode=False) -> Union[None, go.Figure]:
         """
