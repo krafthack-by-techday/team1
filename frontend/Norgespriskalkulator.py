@@ -178,7 +178,7 @@ if config.input_is_set is True:
     with col2:
         st.markdown(
             colored_box(
-                f"Strømregning med SPOT: {cost_with_spotprice:,.0f} NOK".replace(
+                f"Strømregning med Spotpris m/ strømstøtte: {cost_with_spotprice:,.0f} NOK".replace(
                     ",", " "
                 ),
                 bg_color="#FEEDC9",
