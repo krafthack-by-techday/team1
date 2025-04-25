@@ -87,7 +87,6 @@ with st.sidebar:
     # so centering is automatic:
     col2.image(logo, width=250)
 
-st.write("### Hei 👋")
 st.write("### Mister du også helt Gnisten av hva Norgespris er?")
 st.write("Her kan du sjekke om Norgesprisen lønner seg for deg 💰")
 
@@ -101,12 +100,12 @@ config = controls()
 
 user_mapping = {
     "Jan Erik": {
-        "bio": "Jan Erik, 39 år, bor i enebolig i NO2",
+        "bio": "Jan Erik, 39 år, bor i enebolig i NO2 - Sørlandet",
         "timeseries": "Trydal_1",
         "price_area": "NO2",
     },
     "Christine": {
-        "bio": "Christine, 29 år, bor i leilighet i NO1",
+        "bio": "Christine, 29 år, bor i leilighet i NO1 - Østlandet",
         "timeseries": "christine",
         "price_area": "NO1",
     },
